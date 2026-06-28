@@ -1,4 +1,6 @@
-function [Q, k, Err_ind, Exact_err, S] = alg_33(A, b, epsilon)
+function [Q, k, Err_ind, Exact_err, S] = randQB_AF_Fro(A, b, epsilon)
+% randQB_AF_Fro  Adjoint-free, matrix-free adaptive low-rank range finder in
+%                the Frobenius norm (Algorithm 3.3).
     Q = [ ];
     [m ,n] = size(A);
     min_mn = min(m,n);

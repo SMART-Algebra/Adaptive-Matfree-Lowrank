@@ -47,17 +47,17 @@ function [E, ERRORS, RANKS, REL_ERR] = comp_err_rank_F2(A, b, TOL)
         SVD_rel_err(i) = norm(A - A_k,'fro') / norm_A;
 
         %-----------------------------
-        % MF method (alg_31)
+        % MF method (randQB_MF_Fro)
         %-----------------------------
         %rng(2024)
-        [Qmf, Bmf, MF_rank(i), ErrMF, ExactMF, ~] = alg_31(A, b, tol);
+        [Qmf, Bmf, MF_rank(i), ErrMF, ExactMF, ~] = randQB_MF_Fro(A, b, tol, true);
         MF_rel_err(i) = norm(A - Qmf*Bmf,'fro') / norm_A;
 
         %-----------------------------
-        % AF method (alg_33)
+        % AF method (randQB_AF_Fro)
         %-----------------------------
         %rng(2024)
-        [Qaf, AF_rank(i), ErrAF, ~, ~] = alg_33(A, b, tol);
+        [Qaf, AF_rank(i), ErrAF, ~, ~] = randQB_AF_Fro(A, b, tol);
         Baf = Qaf' * A;
         AF_rel_err(i) = norm(A - Qaf*Baf,'fro') / norm_A;
 
