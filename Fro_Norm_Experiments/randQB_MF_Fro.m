@@ -1,35 +1,45 @@
-function [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon, compute_exact)
+function [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon, tol_type, compute_exact)
 % randQB_MF_Fro  Matrix-free, adaptive low-rank QB approximation in the
 %                Frobenius norm (Algorithm 3.1).
 %
 %   [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon)
-%   [...] = randQB_MF_Fro(A, b, epsilon, compute_exact)
+%   [...] = randQB_MF_Fro(A, b, epsilon, tol_type)
+%   [...] = randQB_MF_Fro(A, b, epsilon, tol_type, compute_exact)
 %
 %   Builds Q (orthonormal columns) and B = Q'*A block by block until the
-%   randomized indicator certifies  ||A - Q*B||_F <= epsilon*||A||_F, then
-%   prunes the final block to a near-minimal rank.  A is accessed only
-%   through matrix-vector products (the stopping rule uses the relative
-%   tolerance, i.e. tau = epsilon*||A||_F, estimated on the fly via S).
+%   randomized indicator certifies the target tolerance, then prunes the
+%   final block to a near-minimal rank via Prune_Rank_Fro.  A is accessed
+%   only through matrix-vector products.
 %
 %   Inputs
 %     A             m-by-n matrix
 %     b             block size
-%     epsilon       relative tolerance (0 < epsilon < 1)
+%     epsilon       tolerance (0 < epsilon < 1)
+%     tol_type      (optional, default 'relative')
+%                     'relative' : stop when ||A-Q*B||_F <= epsilon*||A||_F;
+%                                  ||A||_F is estimated on the fly via S.
+%                     'absolute' : stop when ||A-Q*B||_F <= epsilon;
+%                                  S is not needed and is returned empty.
 %     compute_exact (optional, default false) if true, also return the exact
 %                   residual norm at each iteration.  This forms the dense
 %                   residual A - Q*B and is NOT matrix-free; use only for
 %                   diagnostics/experiments.
 %
 %   Outputs
-%     Q, B          QB factors with ||A - Q*B||_F <~ epsilon*||A||_F
+%     Q, B          QB factors satisfying the requested tolerance
 %     k             computed rank, size(Q,2)
 %     Err_ind       randomized error indicator per iteration
 %     Exact_err     exact residual norm per iteration ([] unless compute_exact)
 %     S             running estimate of ||A||_F per iteration
+%                   ([] when tol_type is 'absolute')
 
-    if nargin < 4 || isempty(compute_exact)
+    if nargin < 4 || isempty(tol_type)
+        tol_type = 'relative';
+    end
+    if nargin < 5 || isempty(compute_exact)
         compute_exact = false;
     end
+    use_relative = strcmpi(tol_type, 'relative');
 
     [m, n]  = size(A);
     min_mn  = min(m, n);
@@ -41,14 +51,18 @@ function [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon, compute
     ncol = 0;                       % number of columns currently stored in Q
 
     Err_ind = zeros(maxit, 1);
-    S       = zeros(maxit, 1);
+    if use_relative
+        S = zeros(maxit, 1);
+    else
+        S = [];
+    end
     if compute_exact
         Exact_err = zeros(maxit, 1);
     else
         Exact_err = [];
     end
 
-    sum_Z = 0;                      % running sqrt(sum_k ||Z_k||_F^2)
+    sum_Z = 0;                      % running sqrt(sum_k ||Z_k||_F^2) (relative only)
     k = min_mn;                     % default rank if the tolerance is never met
 
     for i = 1:maxit
@@ -58,9 +72,14 @@ function [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon, compute
         Omega = (1/sqrt(b)) * randn(n, b);
         Z = A * Omega;
 
-        % Running estimate S(i) ~ ||A||_F for the relative stopping rule.
-        sum_Z = hypot(sum_Z, norm(Z, 'fro'));
-        S(i)  = sum_Z / sqrt(i);
+        % Target tolerance for this iteration.
+        if use_relative
+            sum_Z = hypot(sum_Z, norm(Z, 'fro'));
+            S(i)  = sum_Z / sqrt(i);        % running estimate of ||A||_F
+            tau   = epsilon * S(i);
+        else
+            tau   = epsilon;
+        end
 
         % Implicitly sketch the residual:  Y = (A - Q*B)*Omega.
         if ncol == 0
@@ -79,34 +98,21 @@ function [Q, B, k, Err_ind, Exact_err, S] = randQB_MF_Fro(A, b, epsilon, compute
             end
         end
 
-        % Randomized stopping criterion (relative tolerance).
+        % Randomized stopping criterion.
         Err_ind(i) = norm(Y, 'fro');
-        if Err_ind(i) < epsilon * S(i)
-            % ---- Rank pruning of the final block (Prune_Rank_Fro) ----
-            alpha = Err_ind(i);
-            tau   = epsilon * S(i);
+        if Err_ind(i) < tau
+            % Prune the final block to a near-minimal rank (Algorithm 3.2).
+            B_end = B(ncol-b+1:ncol, :);
+            s = Prune_Rank_Fro(B_end, Err_ind(i), tau);
 
-            B_end = B(ncol-b+1:ncol, :);        % rows of the last block B_{i-1}
-            w = vecnorm(B_end, 2, 2);
-            [w_sorted, prm] = sort(w, 'ascend');
-
-            r = [];
-            for j = 1:b
-                alpha_new = sqrt(alpha^2 + w_sorted(j)^2);
-                if alpha_new >= tau
-                    break
-                end
-                alpha = alpha_new;
-                r = [r, prm(j)];                %#ok<AGROW>
-            end
-            s = setdiff(1:b, r, 'stable');      % indices of the last block to keep
-
-            keep = ncol - b;                    % columns kept from earlier blocks
+            keep = ncol - b;                % columns kept from earlier blocks
             Q = [Q(:, 1:keep), Q(:, keep+s)];
             B = [B(1:keep, :);  B(keep+s, :)];
 
             Err_ind = Err_ind(1:i);
-            S       = S(1:i);
+            if use_relative
+                S = S(1:i);
+            end
             if compute_exact
                 Exact_err = Exact_err(1:i);
             end
