@@ -1,10 +1,14 @@
 function [Q, B, k, EE, fail] = randQB_EI_err_rank(A, relerr, b, P)
-% [Q, B, k] = randQB_EI_auto(A, relerr, b, P)
 % The fixed-precision randQB_EI algorithm.
 % It produces QB factorization of A, whose approximation error fulfills
 %     ||A-QB||_F <= ||A||_F* relerr.
 % b is block size, P is power parameter.
 % Output k is the rank.
+%
+% Adapted from Wenjian Yu's reference implementation randQB_EI_auto.m:
+%   https://github.com/WenjianYu/randQB_auto/blob/master/randQB_EI_auto.m
+% We made only minor changes (extra outputs for the error indicator and a
+% convergence-failure flag) so it can be compared against our methods.
     [m, n]  = size(A);
     EE  = [ ];
     Q = zeros(m, 0);

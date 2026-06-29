@@ -50,14 +50,16 @@ function [E, ERRORS, RANKS, REL_ERR] = comp_err_rank_F2(A, b, TOL)
         % MF method (randQB_MF_Fro)
         %-----------------------------
         %rng(2024)
-        [Qmf, Bmf, MF_rank(i), ErrMF, ExactMF, ~] = randQB_MF_Fro(A, b, tol, 'relative', true);
+        [Qmf, Bmf, ErrMF, ExactMF] = randQB_MF_Fro(A, b, tol, 'relative', true);
+        MF_rank(i) = size(Qmf, 2);
         MF_rel_err(i) = norm(A - Qmf*Bmf,'fro') / norm_A;
 
         %-----------------------------
         % AF method (randQB_AF_Fro)
         %-----------------------------
         %rng(2024)
-        [Qaf, AF_rank(i), ErrAF, ~, ~] = randQB_AF_Fro(A, b, tol, 'relative');
+        [Qaf, ErrAF] = randQB_AF_Fro(A, b, tol, 'relative');
+        AF_rank(i) = size(Qaf, 2);
         Baf = Qaf' * A;
         AF_rel_err(i) = norm(A - Qaf*Baf,'fro') / norm_A;
 
