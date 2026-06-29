@@ -3,7 +3,7 @@ close all
 
 %% Generate A
 N = 2^10;
-A = Generate_Test_Matrix(N, N, 6);
+A = Generate_Test_Matrix(N, N, 's_shape');
 
 %% Set block size
 b = 2^5;

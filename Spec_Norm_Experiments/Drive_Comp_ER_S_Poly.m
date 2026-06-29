@@ -3,7 +3,7 @@ close all
 
 %% Generate A
 N = 2^10;
-A = Generate_Test_Matrix(N, N, 3);
+A = Generate_Test_Matrix(N, N, 'poly2');
 
 %% Set block size
 b = 2^5;

@@ -4,7 +4,7 @@ close all
 
 %% Generate A
 N = 2^10;
-A = Generate_Test_Matrix(N, N, 4);
+A = Generate_Test_Matrix(N, N, 'poly4');
 
 %% Set block size
 b = 2^5;

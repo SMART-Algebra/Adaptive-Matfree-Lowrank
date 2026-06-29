@@ -1,18 +1,19 @@
-function A = Generate_Test_Matrix(m, n, t)
-
-    % Generate test matrices  in  "Insert paper name"
-
-    %==================================================================%
-    %% INPUT: Matrix dimensions m and n, value of t (1-5)
-        % t = 1 (Fast Decay): singular values are  exp(-i/2)
-        % t = 2 (Slow Decay 1): singular values are  1/sqrt(i)
-        % t = 3 (Slow Decay 2): singular values are  1/(i^2)
-        % t = 4 (Slow Decay 3): singular values are  1/(i^4) 
-        % t = 5 (S-shaped Decay): singular values are  in the form of an S
-    
-    %% OUTPUT:  Matrix A where A  = U * Sigma * V'
-    %==================================================================%
-
+function A = Generate_Test_Matrix(m, n, name)
+% Generate_Test_Matrix  Random m-by-n test matrix A = U*S*V' with a
+%                       prescribed singular-value decay profile.
+%
+%   A = Generate_Test_Matrix(m, n, name)
+%
+%   U and V have (random) orthonormal columns; the singular values are set by
+%   the string 'name' (case-insensitive):
+%
+%     'exp'       fast/exponential decay   sigma_i = exp(-i/2)
+%     'poly2'     polynomial decay         sigma_i = 1/i^2
+%     'poly4'     polynomial decay         sigma_i = 1/i^4
+%     's_shape'   S-shaped decay (piecewise: linear then polynomial in log10)
+%
+%   In the paper's notation: Matrix 1 = 'exp', Matrix 2 = 'poly4' (Frobenius)
+%   or 'poly2' (spectral), and Matrix 3 = 's_shape'.
 
     K1 = randn(m, m);
     [U, ~] = qr(K1, 'econ');
@@ -20,43 +21,39 @@ function A = Generate_Test_Matrix(m, n, t)
     K2 = randn(n, n);
     [V, ~] = qr(K2, 'econ');
 
+    p = min(m, n);
+    d = zeros(1, p);
 
-    p= min(m,n);
-    d= zeros(1, p);
+    % Generate the singular values.
+    switch lower(name)
+        case 'exp'
+            d = exp(-(1:p)/2);                          % fast/exponential decay
+        case 'poly2'
+            d = (1:p).^(-2);                            % polynomial decay
+        case 'poly4'
+            d = (1:p).^(-4);                            % polynomial decay
+        case 's_shape'
+            % First part of the spectrum: linear decay (in log10) down to
+            % 10^(-plin).
+            plin = 2;            % linear piece ends at 10^(-plin)
+            drop = 200;          % index where the linear piece ends
+            piece_1 = (10^(-plin)).^(((1:drop)-1)/(drop-1));
 
-    % Generate singular values 
-    switch t
-        case 1 
-            d= exp(-(1:p)/2);                             % fast decay
-        case 2 
-            d= (1:p).^(-0.5);                              % very slow decay
-        case 3
-             d= (1:p).^(-2);                                % moderate polynomialdecay
-        case 4
-             d= (1:p).^(-4);                                % fastest polynomial decay
-        case 5
-            d= 0.0001+1./(1+exp((1:p)-30));    %S-shaped Decay
-        case 6
-            % Form first part of spectrm (linear decay)
-            p = 2;              % Choose where linear decay to stop (will be 10^(-p))
-            drop = 200;
-            piece_1 = (10^(-p)).^(((1:drop)-1)/(drop-1));
-
-            % Form second part of spectrm (polynomial decay)
-            pp = -10^(-0.8);
-            xx = (drop+1):n;
-            sigma_N =5*eps;  % Choose smallest singular value
-            sigma_x2 = 10^(-p); % Get last singular value from linear decay 
-            a = (log10(sigma_N/sigma_x2))/ (  (n-drop)^pp -1);
+            % Second part: polynomial decay (in log10).
+            pp       = -10^(-0.8);
+            sigma_N  = 5*eps;        % smallest singular value
+            sigma_x2 = 10^(-plin);   % last value carried over from piece_1
+            a  = (log10(sigma_N/sigma_x2)) / ((n-drop)^pp - 1);
             bb = log10(sigma_x2) - a;
-            piece_2 = 10.^( a*(((drop+1):n)-drop).^pp +bb  );
+            piece_2 = 10.^( a*(((drop+1):n)-drop).^pp + bb );
 
-            % Form spectrum
             d = [piece_1 piece_2];
         otherwise
-            disp('Not a valid t value!');
-            exit;
+            error('Generate_Test_Matrix:badName', ...
+                ['Unknown test matrix ''%s''. Valid names: ', ...
+                 'exp, poly2, poly4, s_shape.'], name);
     end
 
-    S= spdiags(d', 0, m, n);
+    S = spdiags(d', 0, m, n);
     A = U * S * V';
+end
