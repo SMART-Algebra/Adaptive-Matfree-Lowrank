@@ -28,26 +28,26 @@ for t = 1:size(specs, 1)
     A   = Generate_Test_Matrix(N, N, name);
     TOL = 10.^(-1:-1:-p);
 
-    [E, ERRORS, RANKS, ~] = compare_Fro_methods(A, b, TOL);
+    [ERR_IND, RANKS, ~] = compare_Fro_methods(A, b, TOL);
 
     figure('Name', sprintf('%s: error indicator', name));
-    plot_error_indicator(ERRORS);
+    plot_error_indicator(ERR_IND);
 
     figure('Name', sprintf('%s: rank vs tolerance', name));
-    plot_rank_vs_tol(E, RANKS, N);
+    plot_rank_vs_tol(TOL, RANKS, N);
 end
 
 
 % ===================== local plotting functions =====================
 
-function plot_error_indicator(ERRORS)
-% Per-iteration error indicators at the smallest tolerance (last column).
+function plot_error_indicator(ERR_IND)
+% Per-iteration error curves at the smallest tolerance (last row of ERR_IND).
     st = sec52_styles();
-    hRef = plot_series(@semilogy, 1:numel(ERRORS{1,end}), ERRORS{1,end}, st.REF);
+    hRef = plot_series(@semilogy, 1:numel(ERR_IND{end,1}), ERR_IND{end,1}, st.REF);
     hold on
-    hEI  = plot_series(@semilogy, 1:numel(ERRORS{2,end}), ERRORS{2,end}, st.EI);
-    hMF  = plot_series(@semilogy, 1:numel(ERRORS{3,end}), ERRORS{3,end}, st.MF);
-    hAF  = plot_series(@semilogy, 1:numel(ERRORS{4,end}), ERRORS{4,end}, st.AF);
+    hEI  = plot_series(@semilogy, 1:numel(ERR_IND{end,2}), ERR_IND{end,2}, st.EI);
+    hMF  = plot_series(@semilogy, 1:numel(ERR_IND{end,3}), ERR_IND{end,3}, st.MF);
+    hAF  = plot_series(@semilogy, 1:numel(ERR_IND{end,4}), ERR_IND{end,4}, st.AF);
     hold off
     legend([hMF hAF hEI hRef], ...
         {'\texttt{randQB\_MF\_Fro}', '\texttt{randQB\_AF\_Fro}', ...
@@ -59,16 +59,16 @@ function plot_error_indicator(ERRORS)
     set(gca, 'FontSize', 22);
 end
 
-function plot_rank_vs_tol(E, RANKS, N)
+function plot_rank_vs_tol(TOL, RANKS, N)
 % Computed rank vs. prescribed tolerance.  randQB_EI returns full rank (N)
 % on the tolerances where it fails to converge; those points are omitted.
     st  = sec52_styles();
     mEI = RANKS(:,2) ~= N;
-    hRef = plot_series(@semilogx, E,        RANKS(:,1),   st.REF);   % t-SVD
+    hRef = plot_series(@semilogx, TOL,        RANKS(:,1),   st.REF);   % t-SVD
     hold on
-    hEI  = plot_series(@semilogx, E(mEI),   RANKS(mEI,2), st.EI);
-    hMF  = plot_series(@semilogx, E,        RANKS(:,3),   st.MF);
-    hAF  = plot_series(@semilogx, E,        RANKS(:,4),   st.AF);
+    hEI  = plot_series(@semilogx, TOL(mEI),   RANKS(mEI,2), st.EI);
+    hMF  = plot_series(@semilogx, TOL,        RANKS(:,3),   st.MF);
+    hAF  = plot_series(@semilogx, TOL,        RANKS(:,4),   st.AF);
     hold off
     legend([hMF hAF hEI hRef], ...
         {'\texttt{randQB\_MF\_Fro}', '\texttt{randQB\_AF\_Fro}', ...

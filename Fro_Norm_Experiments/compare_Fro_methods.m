@@ -1,37 +1,34 @@
-function [E, ERRORS, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
+function [ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
 % compare_Fro_methods  Compare the Frobenius-norm low-rank methods used in
 %                      Section 5.2 across a list of relative tolerances.
 %
-%   [E, ERRORS, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
+%   [ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
 %
 %   For each tolerance in TOL, runs the truncated SVD baseline, randQB_EI,
-%   randQB_MF_Fro, and randQB_AF_Fro on A with block size b.
+%   randQB_MF_Fro, and randQB_AF_Fro on A with block size b.  Let
+%   ntol = numel(TOL).
 %
 %   Outputs
-%     E        1-by-ntol row of the tolerances (= TOL(:)')
-%     ERRORS   4-by-ntol cell of per-iteration error curves:
-%                row 1 = exact residual (from the MF run)
-%                row 2 = randQB_EI indicator
-%                row 3 = randQB_MF_Fro indicator
-%                row 4 = randQB_AF_Fro indicator
-%     RANKS    ntol-by-4 computed ranks   [t-SVD, EI, MF, AF]
-%     REL_ERR  ntol-by-4 relative errors  [t-SVD, EI, MF, AF]
+%     ERR_IND  ntol-by-4 cell of per-iteration error curves at each tolerance.
+%              Column 1 is the exact residual norm of the randQB_MF_Fro run
+%              (reference, formed explicitly); columns 2-4 are the randomized
+%              error indicators computed internally by randQB_EI /
+%              randQB_MF_Fro / randQB_AF_Fro (i.e. estimates of the error).
+%     RANKS    ntol-by-4 computed ranks         [t-SVD, EI, MF, AF]
+%     REL_ERR  ntol-by-4 true relative errors   [t-SVD, EI, MF, AF],
+%              ||A - Q*B||_F / ||A||_F formed explicitly (exact, not an estimate).
 
     norm_A = norm(A,'fro');
     ntol = length(TOL);
-
-    E = TOL(:)';
 
     %==============================================================%
     % Storage
     %==============================================================%
 
-    % 4 x ntol cell array:
-    % row 1 = Exact error (from MF run)
-    % row 2 = EI indicator
-    % row 3 = MF indicator
-    % row 4 = AF indicator
-    ERRORS = cell(4, ntol);
+    % ntol x 4 cell of per-iteration error curves:
+    % col 1 = exact residual (from the MF run), col 2 = EI indicator,
+    % col 3 = MF indicator, col 4 = AF indicator.
+    ERR_IND = cell(ntol, 4);
 
     % ranks and relative errors
     RANKS = zeros(ntol, 4);   % [SVD, EI, MF, AF]
@@ -94,10 +91,10 @@ function [E, ERRORS, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
         % STORE ERROR TRAJECTORIES
         %======================================================%
 
-        ERRORS{1,i} = ExactMF;        % exact residual energy curve
-        ERRORS{2,i} = sqrt(EI_err_ind(:)'); % EI indicator
-        ERRORS{3,i} = ErrMF;          % MF indicator
-        ERRORS{4,i} = ErrAF;          % AF indicator
+        ERR_IND{i,1} = ExactMF;              % exact residual (reference)
+        ERR_IND{i,2} = sqrt(EI_err_ind(:)'); % randQB_EI indicator
+        ERR_IND{i,3} = ErrMF;                % randQB_MF_Fro indicator
+        ERR_IND{i,4} = ErrAF;                % randQB_AF_Fro indicator
 
         %======================================================%
         % STORE RANKS / REL ERRORS

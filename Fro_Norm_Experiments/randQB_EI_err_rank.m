@@ -43,9 +43,6 @@ function [Q, B, k, EE, fail] = randQB_EI_err_rank(A, relerr, b, P)
         end
 
         if temp< threshold,   % precise rank determination 
-            disp(i)
-            current_rank = size(Q)
-         
             errb4 = norm(A - Q*B,'fro')/norm(A,'fro');
             for j=1:b,
                 E= E-norm(Bi(j,:))^2;

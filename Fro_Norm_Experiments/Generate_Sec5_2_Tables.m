@@ -22,13 +22,13 @@ for t = 1:size(specs, 1)
     A   = Generate_Test_Matrix(N, N, name);
     TOL = 10.^(-1:-1:-p);
 
-    [E, ~, ~, REL_ERR] = compare_Fro_methods(A, b, TOL);
+    [~, ~, REL_ERR] = compare_Fro_methods(A, b, TOL);
 
     fprintf('\n%%===== Relative errors -- %s =====\n', label);
     fprintf(['$\\epsilon$ & SVD & randQB\\_EI & randQB\\_MF\\_Fro ', ...
              '& randQB\\_AF\\_Fro \\\\ \\hline\n']);
     for i = 1:numel(TOL)
         fprintf('%.0e & %.4e & %.4e & %.4e & %.4e \\\\\n', ...
-            E(i), REL_ERR(i,1), REL_ERR(i,2), REL_ERR(i,3), REL_ERR(i,4));
+            TOL(i), REL_ERR(i,1), REL_ERR(i,2), REL_ERR(i,3), REL_ERR(i,4));
     end
 end
