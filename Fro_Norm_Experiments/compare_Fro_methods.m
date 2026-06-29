@@ -1,4 +1,21 @@
-function [E, ERRORS, RANKS, REL_ERR] = comp_err_rank_F2(A, b, TOL)
+function [E, ERRORS, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
+% compare_Fro_methods  Compare the Frobenius-norm low-rank methods used in
+%                      Section 5.2 across a list of relative tolerances.
+%
+%   [E, ERRORS, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
+%
+%   For each tolerance in TOL, runs the truncated SVD baseline, randQB_EI,
+%   randQB_MF_Fro, and randQB_AF_Fro on A with block size b.
+%
+%   Outputs
+%     E        1-by-ntol row of the tolerances (= TOL(:)')
+%     ERRORS   4-by-ntol cell of per-iteration error curves:
+%                row 1 = exact residual (from the MF run)
+%                row 2 = randQB_EI indicator
+%                row 3 = randQB_MF_Fro indicator
+%                row 4 = randQB_AF_Fro indicator
+%     RANKS    ntol-by-4 computed ranks   [t-SVD, EI, MF, AF]
+%     REL_ERR  ntol-by-4 relative errors  [t-SVD, EI, MF, AF]
 
     norm_A = norm(A,'fro');
     ntol = length(TOL);
