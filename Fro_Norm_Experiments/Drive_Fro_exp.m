@@ -23,20 +23,21 @@ A = Generate_Test_Matrix(N, N, 'exp');
 [ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL);
 
 %% Line/marker styles (bright + distinct for the new methods; black reference)
-MF  = {'Color',[0.00 0.45 0.90],'LineStyle','-.', 'Marker','o','MarkerSize',15, ...
-       'LineWidth',3.5,'MarkerFaceColor',[0.00 0.45 0.90]};   % randQB_MF_Fro
-AF  = {'Color',[0.95 0.45 0.05],'LineStyle','--','Marker','s','MarkerSize',9,  ...
-       'LineWidth',3.5,'MarkerFaceColor',[0.95 0.45 0.05]};   % randQB_AF_Fro
-EI  = {'Color',[0.35 0.35 0.35],'LineStyle','-','Marker','*','MarkerSize',20, ...
-       'LineWidth',3.0};                                      % randQB_EI
+MF  = {'Color','b','LineStyle','-.', 'Marker','o','MarkerSize',23, ...
+       'LineWidth',3.5};   % randQB_MF_Fro (hollow marker so overlapped markers show through)
+AF  = {'Color','r','LineStyle','--','Marker','^','MarkerSize',15,  ...
+       'LineWidth',3.5,'MarkerFaceColor',[0.85 0.10 0.10]};   % randQB_AF_Fro (solid red triangle)
+EI  = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
+       'LineWidth',3.0};                                      % randQB_EI (orange)
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
 % (a) Error indicators at the smallest tolerance
-figure('Name','exp: error indicator');
-hRef = semilogy(1:numel(ERR_IND{end,1}), ERR_IND{end,1}, REF{:}); hold on
+f_err = figure('Name','exp: error indicator'); 
+hMF  = semilogy(1:numel(ERR_IND{end,3}), ERR_IND{end,3}, MF{:}); hold on
+hAF  = semilogy(1:numel(ERR_IND{end,4}), ERR_IND{end,4}, AF{:}); 
 hEI  = semilogy(1:numel(ERR_IND{end,2}), ERR_IND{end,2}, EI{:});
-hMF  = semilogy(1:numel(ERR_IND{end,3}), ERR_IND{end,3}, MF{:});
-hAF  = semilogy(1:numel(ERR_IND{end,4}), ERR_IND{end,4}, AF{:}); hold off
+hRef = semilogy(1:numel(ERR_IND{end,1}), ERR_IND{end,1}, REF{:}); 
+hold off
 legend([hMF hAF hEI hRef], ...
     {'\texttt{randQB\_MF\_Fro}','\texttt{randQB\_AF\_Fro}','\texttt{randQB\_EI}','Exact error'}, ...
     'Interpreter','latex','Location','best');
@@ -46,17 +47,22 @@ grid on; set(gca,'FontSize',22);
 
 % (b) Computed rank vs. prescribed tolerance
 mEI = RANKS(:,2) ~= N;          % drop tolerances where randQB_EI returns full rank
-figure('Name','exp: rank vs tolerance');
+f_rank = figure('Name','exp: rank vs tolerance');
 hRef = semilogx(TOL,      RANKS(:,1),   REF{:}); hold on   % t-SVD
-hEI  = semilogx(TOL(mEI), RANKS(mEI,2), EI{:});            % randQB_EI
 hMF  = semilogx(TOL,      RANKS(:,3),   MF{:});            % randQB_MF_Fro
-hAF  = semilogx(TOL,      RANKS(:,4),   AF{:}); hold off   % randQB_AF_Fro
+hAF  = semilogx(TOL,      RANKS(:,4),   AF{:});    % randQB_AF_Fro
+hEI  = semilogx(TOL(mEI), RANKS(mEI,2), EI{:});            % randQB_EI
+hold off
 legend([hMF hAF hEI hRef], ...
     {'\texttt{randQB\_MF\_Fro}','\texttt{randQB\_AF\_Fro}','\texttt{randQB\_EI}','\texttt{t-SVD}'}, ...
     'Interpreter','latex','Location','best');
 xlabel('Prescribed tolerance $\epsilon$','Interpreter','latex');
 ylabel('Computed rank $k$','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
+
+%% Save the two panels as EPS (copy these into the manuscript's FIGURES/ folder)
+print(f_err,  'err_ind_Fro_exp', '-depsc');
+print(f_rank, 'rank_Fro_exp',    '-depsc');
 
 %% Results table for this matrix: rank k and relative error per method
 %  (printed as copy-paste LaTeX rows).
@@ -67,10 +73,18 @@ fprintf(['$\\epsilon$ & \\multicolumn{2}{c}{SVD} & \\multicolumn{2}{c}{randQB\\_
 fprintf([' & $k$ & rel.\\ err & $k$ & rel.\\ err & $k$ & rel.\\ err', ...
          ' & $k$ & rel.\\ err \\\\ \\hline\n']);
 for i = 1:numel(TOL)
-    fprintf('%.0e & %d & %.2e & %d & %.2e & %d & %.2e & %d & %.2e \\\\\n', ...
+    % randQB_EI fails when its achieved error exceeds the requested tolerance
+    % (its precision wall); mark such cases 'fail' in red, spanning the two
+    % randQB_EI columns (needs \usepackage{xcolor} in the manuscript).
+    if REL_ERR(i,2) > TOL(i)
+        ei_cell = '\multicolumn{2}{c|}{\textcolor{red}{fail}}';
+    else
+        ei_cell = sprintf('%d & %.2e', RANKS(i,2), REL_ERR(i,2));
+    end
+    fprintf('%.0e & %d & %.2e & %s & %d & %.2e & %d & %.2e \\\\\n', ...
         TOL(i), ...
         RANKS(i,1), REL_ERR(i,1), ...
-        RANKS(i,2), REL_ERR(i,2), ...
+        ei_cell, ...
         RANKS(i,3), REL_ERR(i,3), ...
         RANKS(i,4), REL_ERR(i,4));
 end

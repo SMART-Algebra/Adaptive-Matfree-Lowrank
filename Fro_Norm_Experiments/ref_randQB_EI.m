@@ -1,21 +1,30 @@
-function [Q, B, k, EE, fail] = randQB_EI_err_rank(A, relerr, b, P)
-% The fixed-precision randQB_EI algorithm.
-% It produces QB factorization of A, whose approximation error fulfills
-%     ||A-QB||_F <= ||A||_F* relerr.
+function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
+% The fixed-precision randQB_EI algorithm (reference method).
+% It produces a QB factorization of A whose approximation error fulfills
+%     ||A-QB||_F <= tol*||A||_F   (tol_type = 'relative', default), or
+%     ||A-QB||_F <= tol           (tol_type = 'absolute').
 % b is block size, P is power parameter.
 % Output k is the rank.
 %
 % Adapted from Wenjian Yu's reference implementation randQB_EI_auto.m:
 %   https://github.com/WenjianYu/randQB_auto/blob/master/randQB_EI_auto.m
 % We made only minor changes (extra outputs for the error indicator and a
-% convergence-failure flag) so it can be compared against our methods.
+% convergence-failure flag, plus an absolute-tolerance option) so it can be
+% compared against our methods.
+    if nargin < 5 || isempty(tol_type)
+        tol_type = 'relative';
+    end
     [m, n]  = size(A);
     EE  = [ ];
     Q = zeros(m, 0);
     B = zeros(0, n);
     E= norm(A, 'fro')^2; E0= E;
     EE = [EE E];
-    threshold= relerr^2*E;
+    if strcmpi(tol_type, 'relative')
+        threshold = tol^2 * E;      % (tol * ||A||_F)^2
+    else
+        threshold = tol^2;          % absolute
+    end
     maxiter= ceil(min(m,n)/b);
     flag= false;
     fail = false;
@@ -39,7 +48,7 @@ function [Q, B, k, EE, fail] = randQB_EI_err_rank(A, relerr, b, P)
         temp = E- norm(Bi, 'fro')^2;
         if temp<0
             warning('Error indicator became negative')
-            fprintf('Tolerance: %.1e\n', relerr)
+            fprintf('Tolerance: %.1e\n', tol)
         end
 
         if temp< threshold,   % precise rank determination 

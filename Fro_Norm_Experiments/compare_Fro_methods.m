@@ -57,7 +57,7 @@ function [ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
         %-----------------------------
         % SVD baseline
         %-----------------------------
-        [A_k, SVD_rank(i)] = truncated_svd_F_rel(A, tol);
+        [A_k, SVD_rank(i)] = ref_tsvd_Fro(A, tol, 'relative');
         SVD_rel_err(i) = norm(A - A_k,'fro') / norm_A;
 
         %-----------------------------
@@ -81,7 +81,7 @@ function [ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
         % EI method
         %-----------------------------
         %rng(2024)
-        [Qei, Bei, EI_rank(i), EI_err_ind, fail] = randQB_EI_err_rank(A, tol, b, 0);
+        [Qei, Bei, EI_rank(i), EI_err_ind, fail] = ref_randQB_EI(A, tol, b, 0, 'relative');
         Qei = Qei(:, 1:EI_rank(i));
         Bei = Bei(1:EI_rank(i), :);
         EI_rel_err(i) = norm(A - Qei*Bei,'fro') / norm_A;
