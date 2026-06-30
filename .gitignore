@@ -1,1 +1,4 @@
 .DS_Store
+
+# Figures produced by the drivers (copied into the manuscript's FIGURES/ folder)
+*.eps
