@@ -1,4 +1,4 @@
-function [A_k, k] = ref_tsvd_Fro(A, tol, tol_type)
+function [A_k, k] = ref_svd_Fro(A, tol, tol_type)
     %==================================================================%
     % Reference truncated-SVD baseline in the Frobenius norm.
     %
@@ -36,12 +36,11 @@ function [A_k, k] = ref_tsvd_Fro(A, tol, tol_type)
         k = length(d) - k_remove;
     end
 
-    % Truncated SVD
-    U_k = U(:, 1:k);
-    S_k = S(1:k, 1:k);
-    V_k = V(:, 1:k);
-
-    A_k = U_k * S_k * V_k';
+    % Rank-k truncated SVD.  Scale the columns of U by the singular values
+    % (a length-k vector) instead of forming the k-by-k diagonal matrix S_k,
+    % avoiding the dense U_k*S_k product.
+    s = diag(S);
+    A_k = (U(:, 1:k) .* s(1:k).') * V(:, 1:k)';
 
 end
 

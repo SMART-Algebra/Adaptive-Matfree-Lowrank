@@ -51,8 +51,7 @@ function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
             fprintf('Tolerance: %.1e\n', tol)
         end
 
-        if temp< threshold,   % precise rank determination 
-            errb4 = norm(A - Q*B,'fro')/norm(A,'fro');
+        if temp< threshold,   % precise rank determination
             for j=1:b,
                 E= E-norm(Bi(j,:))^2;
                 if E< threshold,

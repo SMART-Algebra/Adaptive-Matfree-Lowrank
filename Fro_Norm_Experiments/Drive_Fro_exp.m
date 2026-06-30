@@ -28,7 +28,7 @@ MF  = {'Color','b','LineStyle','-.', 'Marker','o','MarkerSize',23, ...
 AF  = {'Color','r','LineStyle','--','Marker','^','MarkerSize',15,  ...
        'LineWidth',3.5,'MarkerFaceColor',[0.85 0.10 0.10]};   % randQB_AF_Fro (solid red triangle)
 EI  = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
-       'LineWidth',3.0};                                      % randQB_EI (orange)
+       'LineWidth',3.0};                                      % randQB_EI
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
 % (a) Error indicators at the smallest tolerance
@@ -73,10 +73,11 @@ fprintf(['$\\epsilon$ & \\multicolumn{2}{c}{SVD} & \\multicolumn{2}{c}{randQB\\_
 fprintf([' & $k$ & rel.\\ err & $k$ & rel.\\ err & $k$ & rel.\\ err', ...
          ' & $k$ & rel.\\ err \\\\ \\hline\n']);
 for i = 1:numel(TOL)
-    % randQB_EI fails when its achieved error exceeds the requested tolerance
-    % (its precision wall); mark such cases 'fail' in red, spanning the two
-    % randQB_EI columns (needs \usepackage{xcolor} in the manuscript).
-    if REL_ERR(i,2) > TOL(i)
+    % randQB_EI fails when it cannot deliver a low-rank approximation meeting the
+    % tolerance: either its error exceeds the tolerance, or it returns full rank
+    % (no compression). Mark such cases 'fail' in red across its two columns
+    % (needs \usepackage{xcolor} in the manuscript).
+    if REL_ERR(i,2) > TOL(i) || (RANKS(i,2) == N && RANKS(i,1) < N)
         ei_cell = '\multicolumn{2}{c|}{\textcolor{red}{fail}}';
     else
         ei_cell = sprintf('%d & %.2e', RANKS(i,2), REL_ERR(i,2));
