@@ -185,7 +185,9 @@ Each driver sets up its matrix, calls `compare_Spec_methods`, and then:
    per-iteration error indicators), saving them as EPS
    (e.g. `rank_Spec_exp.eps`, `err_ind_Spec_exp.eps`); and
 2. prints the results table (rank `k` and relative error per method) as
-   copy-paste LaTeX rows, with `randQB_HMT` failures marked `fail`.
+   copy-paste LaTeX rows. `randQB_HMT` does not fail — it simply overestimates
+   the rank (sometimes up to full rank) — so the raw numbers are shown for all
+   methods.
 
 Example:
 
