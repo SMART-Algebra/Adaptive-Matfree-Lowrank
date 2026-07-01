@@ -10,8 +10,7 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Fro(A, b, epsilon, tol_type, comput
 %   action A*X (no adjoint A'*X) until the randomized indicator certifies the
 %   target tolerance, then prunes the final block via Prune_Rank_Fro.  The
 %   projection B = Q'*A is never formed; the pruning row norms are estimated
-%   from the forward sketch B_tilde = Q'*Z (see eq. (3.x) / eq:bi).  The
-%   computed rank is size(Q,2).
+%   from the forward sketch B_tilde = Q'*Z.  The computed rank is size(Q,2).
 %
 %   Inputs
 %     A             m-by-n matrix

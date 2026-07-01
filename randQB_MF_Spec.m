@@ -8,7 +8,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 %
 %   Builds Q (orthonormal columns) and B = Q'*A block by block.  Each new
 %   block B_i serves as a "look-ahead" error indicator: ||B_i||_2 estimates
-%   the residual norm ||A - Q_{1..i-1}B_{1..i-1}||_2 (eq. (4.x)).  Once
+%   the residual norm ||A - Q_{1..i-1}B_{1..i-1}||_2.  Once
 %   ||B_i||_2 <= tau, this look-ahead block is discarded and the previous
 %   block is truncated to a near-minimal rank via Prune_Rank_Spec (Algorithm
 %   4.2).  A is accessed only through matrix-vector products.  The computed

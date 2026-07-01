@@ -32,11 +32,11 @@ EI  = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
 % (a) Error indicators at the smallest tolerance
-f_err = figure('Name','exp: error indicator'); 
+f_err = figure('Name','exp: error indicator');
 hMF  = semilogy(1:numel(ERR_IND{end,3}), ERR_IND{end,3}, MF{:}); hold on
-hAF  = semilogy(1:numel(ERR_IND{end,4}), ERR_IND{end,4}, AF{:}); 
+hAF  = semilogy(1:numel(ERR_IND{end,4}), ERR_IND{end,4}, AF{:});
 hEI  = semilogy(1:numel(ERR_IND{end,2}), ERR_IND{end,2}, EI{:});
-hRef = semilogy(1:numel(ERR_IND{end,1}), ERR_IND{end,1}, REF{:}); 
+hRef = semilogy(1:numel(ERR_IND{end,1}), ERR_IND{end,1}, REF{:});
 hold off
 legend([hMF hAF hEI hRef], ...
     {'\texttt{randQB\_MF\_Fro}','\texttt{randQB\_AF\_Fro}','\texttt{randQB\_EI}','Exact error'}, ...
