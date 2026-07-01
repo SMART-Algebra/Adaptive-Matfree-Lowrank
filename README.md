@@ -1,8 +1,7 @@
 # Adaptive, Matrix-Free Low-Rank Approximation — Companion Code
 
 MATLAB code reproducing the numerical experiments in the manuscript
-*Robust, Adaptive, and Matrix-Free Algorithms for Fixed-Tolerance Low-Rank
-Approximation*.
+*Adaptive, Matrix-Free Low-Rank Approximation*.
 
 Requirements: MATLAB (R2016b or later — the code uses implicit array expansion).
 
