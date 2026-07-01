@@ -195,3 +195,10 @@ Example:
 addpath('..');        % so Generate_Test_Matrix and the methods are on the path
 Drive_Spec_exp        % generates the exponential-decay figure + table
 ```
+
+---
+
+## Acknowledgment
+
+AI-based assistants were used to help develop and document this code. The
+authors reviewed and tested all code and take full responsibility for it.
