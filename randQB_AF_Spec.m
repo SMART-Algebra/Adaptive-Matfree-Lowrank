@@ -13,10 +13,6 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 %   block is truncated via the SVD of its R factor.  The computed rank is
 %   size(Q,2).
 %
-%   NOTE: Section 4.3 is still being finalized; this routine preserves the
-%   numerics of the experimental adjoint-free spectral algorithm and only
-%   tidies its structure / output interface.
-%
 %   Inputs
 %     A             m-by-n matrix
 %     b             block size
@@ -46,7 +42,10 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
     min_mn  = min(m, n);
     maxit   = ceil(min_mn / b);
 
-    Q = zeros(m, 0);
+    % Preallocate the basis and per-iteration diagnostics.
+    Q = zeros(m, maxit * b);
+    ncol = 0;                           % columns of Q currently stored
+
     Err_ind = zeros(maxit, 1);
     if compute_exact
         Exact_err = zeros(maxit, 1);
@@ -55,7 +54,6 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
     end
 
     R_prev = [];                        % R factor of the previous (retained) block
-    Qorth_prev = [];                    % basis of the previous (retained) block
 
     for i = 1:maxit
 
@@ -63,14 +61,15 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
         Z = A * Omega;
 
         % Adjoint-free residual sketch  Y = (A - Q*Q'*A)*Omega = Z - Q*(Q'*Z).
-        if isempty(Q)
+        if ncol == 0
             [Qbar, R] = qr(Z, 'econ');
-            Qorth = Qbar;
+            Qi = Qbar;
         else
-            Y = Z - Q * (Q' * Z);
+            Qc = Q(:, 1:ncol);
+            Y  = Z - Qc * (Qc' * Z);
             [Qbar, R] = qr(Y, 'econ');
-            Qorth = Qbar - Q * (Q' * Qbar);
-            [Qorth, ~] = qr(Qorth, 'econ');
+            Qi = Qbar - Qc * (Qc' * Qbar);
+            [Qi, ~] = qr(Qi, 'econ');
         end
 
         % Adjoint-free indicator ||R_i||_2 / sqrt(b)  (proxy for ||B_i||_2).
@@ -83,10 +82,10 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
         end
 
         if compute_exact
-            if isempty(Q)
+            if ncol == 0
                 Exact_err(i) = norm(A);
             else
-                Exact_err(i) = norm(A - Q * (Q' * A));
+                Exact_err(i) = norm(A - Qc * (Qc' * A));
             end
         end
 
@@ -97,31 +96,29 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
                 Exact_err = Exact_err(1:i);
             end
 
-            if i == 1
-                Rk = R;  Qk = Qorth;            % nothing retained yet
+            if ncol == 0
+                Rk = R;  Qk = Qi;  keep = 0;        % nothing retained yet (block 1)
             else
-                Rk = R_prev;  Qk = Qorth_prev;  % the last appended block
+                Rk = R_prev;  keep = ncol - b;      % blocks 1..i-2 are kept whole
+                Qk = Q(:, keep+1:ncol);             % basis of the last retained block
             end
 
             [U, S, ~] = svd(Rk);
             svals = diag(S) / sqrt(b);
-            r = find(svals >= tau);
+            s = find(svals >= tau);
 
-            if i == 1
-                Q = Qk * U(:, r);
-            else
-                Q = [Q(:, 1:(i-2)*b), Qk * U(:, r)];
-            end
+            Q = [Q(:, 1:keep), Qk * U(:, s)];
             return
         end
 
         % Indicator still above tolerance: append the block.
-        Q = [Q, Qorth];                 %#ok<AGROW>
-        R_prev = R;  Qorth_prev = Qorth;
+        Q(:, ncol+1:ncol+b) = Qi;
+        ncol = ncol + b;
+        R_prev = R;
 
-        if size(Q, 2) >= min_mn
+        if ncol >= min_mn
             % Tolerance never met: return the full basis.
-            Q = Q(:, 1:min_mn);
+            Q = Q(:, 1:ncol);
             Err_ind = Err_ind(1:i);
             if compute_exact
                 Exact_err = Exact_err(1:i);
@@ -130,6 +127,7 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
         end
     end
 
+    Q = Q(:, 1:ncol);
     Err_ind = Err_ind(1:i);
     if compute_exact
         Exact_err = Exact_err(1:i);

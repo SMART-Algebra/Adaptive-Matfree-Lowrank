@@ -28,15 +28,18 @@ function s = Prune_Rank_Fro(B, alpha, tau)
     w = vecnorm(B, 2, 2);
     [w_sorted, prm] = sort(w, 'ascend');
 
-    r = [];                                 % indices to discard
+    % Discard the smallest rows one at a time until removing the next would
+    % break tau.  Because w_sorted is ascending, the discarded set is the
+    % prefix prm(1:ndiscard), so no growing array is needed.
+    ndiscard = 0;
     for j = 1:b
         alpha_new = sqrt(alpha^2 + w_sorted(j)^2);
         if alpha_new >= tau
             break                           % discarding this row would break tau
         end
         alpha = alpha_new;
-        r = [r, prm(j)];                    %#ok<AGROW>
+        ndiscard = j;
     end
 
-    s = setdiff(1:b, r, 'stable');          % keep everything not discarded
+    s = setdiff(1:b, prm(1:ndiscard), 'stable');   % keep everything not discarded
 end

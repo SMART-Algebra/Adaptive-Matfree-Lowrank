@@ -21,42 +21,55 @@ function [Q, k, M] = ref_randQB_HMT(A, epsilon, r)
 %     k   computed rank, size(Q,2)
 %     M   history of the maximal probe-column norm (error-indicator trace)
 
-    [~, n] = size(A);
-    Q = zeros(size(A, 1), 0);
-    j = 0;
+    [m, n] = size(A);
+    cap = min(m, n);                % at most min(m,n) orthonormal columns
 
-    % Initial block of r random probes.
-    Omega = randn(n, r);
-    Y = A * Omega;
+    % Preallocate the basis, the probe buffer, and the indicator history so
+    % none of them are grown inside the loop.
+    Q  = zeros(m, cap);
+    kq = 0;                         % basis columns accepted so far
+    Y  = zeros(m, cap + r);         % probe buffer: initial r probes + one per step
+    ny = r;                         % probe columns currently in use
+    M  = zeros(1, cap + 1);         % indicator history
+    nm = 1;
 
-    M = max(vecnorm(Y(:, 1:r), 2, 1));            % running indicator history
+    Y(:, 1:r) = A * randn(n, r);
+    M(1) = max(vecnorm(Y(:, 1:r), 2, 1));
     threshold = epsilon / (10 * sqrt(2/pi));
 
+    j = 0;
     % Stop when the maximal probe norm drops below the threshold.
-    while M(end) > threshold && size(Q, 2) < n
+    while M(nm) > threshold && kq < cap
         j = j + 1;
 
-        % Re-orthogonalize probe j against Q, normalize, append.
-        if isempty(Q)
+        % Re-orthogonalize probe j against Q, normalize, accept it.
+        if kq == 0
             y_j = Y(:, j);
         else
-            y_j = Y(:, j) - Q * (Q' * Y(:, j));
+            Qc  = Q(:, 1:kq);
+            y_j = Y(:, j) - Qc * (Qc' * Y(:, j));
         end
         q_j = y_j / norm(y_j, 2);
-        Q   = [Q, q_j];                            %#ok<AGROW>
+        kq = kq + 1;
+        Q(:, kq) = q_j;
 
-        % Draw a fresh probe, orthogonalize against Q, append to Y.
+        % Draw a fresh probe, orthogonalize against Q, append to the buffer.
         y_new = A * randn(n, 1);
-        y_new = y_new - Q * (Q' * y_new);
-        Y = [Y, y_new];                            %#ok<AGROW>
+        Qc = Q(:, 1:kq);
+        y_new = y_new - Qc * (Qc' * y_new);
+        ny = ny + 1;
+        Y(:, ny) = y_new;
 
         % Re-orthogonalize the remaining live probes against the new q_j.
-        for i = (j+1):(j+r-1)
-            Y(:, i) = Y(:, i) - (q_j' * Y(:, i)) * q_j;
+        for t = (j+1):(j+r-1)
+            Y(:, t) = Y(:, t) - (q_j' * Y(:, t)) * q_j;
         end
 
-        M = [M, max(vecnorm(Y(:, (j+1):(j+r)), 2, 1))];   %#ok<AGROW>
+        nm = nm + 1;
+        M(nm) = max(vecnorm(Y(:, (j+1):(j+r)), 2, 1));
     end
 
-    k = size(Q, 2);
+    Q = Q(:, 1:kq);
+    M = M(1:nm);
+    k = kq;
 end

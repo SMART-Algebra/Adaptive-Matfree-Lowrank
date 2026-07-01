@@ -15,63 +15,73 @@ function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
         tol_type = 'relative';
     end
     [m, n]  = size(A);
-    EE  = [ ];
-    Q = zeros(m, 0);
-    B = zeros(0, n);
-    E= norm(A, 'fro')^2; E0= E;
-    EE = [EE E];
+    maxiter = ceil(min(m,n)/b);
+
+    % Preallocate the factors; ncol tracks how many columns are in use.
+    Q = zeros(m, maxiter*b);
+    B = zeros(maxiter*b, n);
+    ncol = 0;
+
+    E = norm(A, 'fro')^2;  E0 = E;
+    EE = E;                             % error-indicator history (small vector)
     if strcmpi(tol_type, 'relative')
-        threshold = tol^2 * E;      % (tol * ||A||_F)^2
+        threshold = tol^2 * E;          % (tol * ||A||_F)^2
     else
-        threshold = tol^2;          % absolute
+        threshold = tol^2;              % absolute
     end
-    maxiter= ceil(min(m,n)/b);
-    flag= false;
+    flag = false;
     fail = false;
-    for i=1:maxiter
+    for i = 1:maxiter
+        Qc = Q(:, 1:ncol);
+        Bc = B(1:ncol, :);
+
         Omg = randn(n, b);
-        Y = A * Omg - (Q * (B * Omg));
+        Y = A * Omg - (Qc * (Bc * Omg));
         [Qi, ~] = qr(Y, 0);
-        
+
         for j = 1:P
-            [Qi, ~] = qr(A'*Qi - B'*(Q'*Qi), 0);  % can skip orthonormalization for small b. 
-            [Qi, ~] = qr(A*Qi - Q*(B*Qi), 0);
+            [Qi, ~] = qr(A'*Qi - Bc'*(Qc'*Qi), 0);  % can skip orthonormalization for small b.
+            [Qi, ~] = qr(A*Qi - Qc*(Bc*Qi), 0);
         end
-        
-        [Qi, ~] = qr(Qi - Q * (Q' * Qi), 0);
-        
-        Bi = Qi' * A - Qi' * Q * B;
-        
-        Q = [Q, Qi];
-        B = [B; Bi];
-        
-        temp = E- norm(Bi, 'fro')^2;
-        if temp<0
+
+        [Qi, ~] = qr(Qi - Qc * (Qc' * Qi), 0);
+
+        Bi = Qi' * A - Qi' * Qc * Bc;
+
+        Q(:, ncol+1:ncol+b) = Qi;
+        B(ncol+1:ncol+b, :) = Bi;
+        ncol = ncol + b;
+
+        temp = E - norm(Bi, 'fro')^2;
+        if temp < 0
             warning('Error indicator became negative')
             fprintf('Tolerance: %.1e\n', tol)
         end
 
-        if temp< threshold,   % precise rank determination
-            for j=1:b,
-                E= E-norm(Bi(j,:))^2;
-                if E< threshold,
-                    flag= true;
+        if temp < threshold     % precise rank determination
+            for j = 1:b
+                E = E - norm(Bi(j,:))^2;
+                if E < threshold
+                    flag = true;
                     break;
                 end
             end
         else
-            E= temp;
+            E = temp;
             EE = [EE E];
         end
-        if flag,
-            k= (i-1)*b + j;
+        if flag
+            k = (i-1)*b + j;
             break;
         end
-        
     end
-    if ~flag,
-        k= i*b;
+    if ~flag
+        k = i*b;
         fail = true;
         fprintf('E = %f. Fail to converge within maxiter!\n\n', sqrt(E/E0));
     end
+
+    % Return only the filled portion of the preallocated factors.
+    Q = Q(:, 1:ncol);
+    B = B(1:ncol, :);
 end
