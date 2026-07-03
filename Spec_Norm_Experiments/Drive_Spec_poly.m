@@ -20,7 +20,7 @@ TOL = sort([ ...                % refined tolerance grid down to 5e-7
     1e-3 5e-4 2e-4 ...
     1e-4 5e-5 2e-5 1e-5 5e-6 1e-6 5e-7], 'descend');
 
-A = Generate_Test_Matrix(N, N, 'poly2');
+A = Generate_Test_Matrix(N, N, 'poly4');
 
 %% Run the comparison
 [ERR_IND, RANKS, REL_ERR] = compare_Spec_methods(A, b, TOL);
@@ -60,7 +60,7 @@ legend([hMF hAF hHMT hRef], ...
     {'\texttt{randQB\_MF\_Spec}','\texttt{randQB\_AF\_Spec}','\texttt{randQB\_HMT}','Exact error'}, ...
     'Interpreter','latex','Location','best');
 xlabel('Iteration $i$','Interpreter','latex');
-ylabel('Error estimator','Interpreter','latex');
+ylabel('Error indicator','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
 
 %% Save the two panels as EPS (copy these into the manuscript's FIGURES/ folder)

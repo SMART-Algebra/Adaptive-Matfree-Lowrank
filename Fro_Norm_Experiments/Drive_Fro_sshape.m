@@ -44,7 +44,7 @@ legend([hMF hAF hEI hRef], ...
     {'\texttt{randQB\_MF\_Fro}','\texttt{randQB\_AF\_Fro}','\texttt{randQB\_EI}','Exact error'}, ...
     'Interpreter','latex','Location','best');
 xlabel('Iteration $i$','Interpreter','latex');
-ylabel('Error estimator','Interpreter','latex');
+ylabel('Error indicator','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
 
 % (b) Computed rank vs. prescribed tolerance

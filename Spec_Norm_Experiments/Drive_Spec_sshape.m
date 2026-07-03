@@ -32,12 +32,11 @@ HMT = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
 % (a) Computed rank vs. prescribed tolerance
-mHMT = RANKS(:,2) ~= N;          % drop tolerances where randQB_HMT returns full rank
 f_rank = figure('Name','sshape: rank vs tolerance');
-hRef = semilogx(TOL,       RANKS(:,1),    REF{:}); hold on   % t-SVD
-hMF  = semilogx(TOL,       RANKS(:,3),    MF{:});            % randQB_MF_Spec
-hAF  = semilogx(TOL,       RANKS(:,4),    AF{:});            % randQB_AF_Spec
-hHMT = semilogx(TOL(mHMT), RANKS(mHMT,2), HMT{:});           % randQB_HMT
+hRef = semilogx(TOL, RANKS(:,1), REF{:}); hold on   % t-SVD
+hMF  = semilogx(TOL, RANKS(:,3), MF{:});            % randQB_MF_Spec
+hAF  = semilogx(TOL, RANKS(:,4), AF{:});            % randQB_AF_Spec
+hHMT = semilogx(TOL, RANKS(:,2), HMT{:});           % randQB_HMT
 hold off
 legend([hMF hAF hHMT hRef], ...
     {'\texttt{randQB\_MF\_Spec}','\texttt{randQB\_AF\_Spec}','\texttt{randQB\_HMT}','\texttt{t-SVD}'}, ...
@@ -57,7 +56,7 @@ legend([hMF hAF hHMT hRef], ...
     {'\texttt{randQB\_MF\_Spec}','\texttt{randQB\_AF\_Spec}','\texttt{randQB\_HMT}','Exact error'}, ...
     'Interpreter','latex','Location','best');
 xlabel('Iteration $i$','Interpreter','latex');
-ylabel('Error estimator','Interpreter','latex');
+ylabel('Error indicator','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
 
 %% Save the two panels as EPS (copy these into the manuscript's FIGURES/ folder)

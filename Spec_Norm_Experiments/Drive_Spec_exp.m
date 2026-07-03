@@ -13,7 +13,7 @@ clear; close all;
 
 %% Problem setup
 N   = 2^10;                     % matrix size (N x N)
-b   = 2^3;                      % block size
+b   = 2^4;                      % block size
 p   = 14;                       % tolerances 10^-1 ... 10^-p
 TOL = 10.^(-1:-1:-p);
 
@@ -57,7 +57,7 @@ legend([hMF hAF hHMT hRef], ...
     {'\texttt{randQB\_MF\_Spec}','\texttt{randQB\_AF\_Spec}','\texttt{randQB\_HMT}','Exact error'}, ...
     'Interpreter','latex','Location','best');
 xlabel('Iteration $i$','Interpreter','latex');
-ylabel('Error estimator','Interpreter','latex');
+ylabel('Error indicator','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
 
 %% Save the two panels as EPS (copy these into the manuscript's FIGURES/ folder)
