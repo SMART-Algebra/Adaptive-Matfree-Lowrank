@@ -62,7 +62,7 @@ s = Prune_Rank_Fro(B, alpha, tau)
 
 [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, compute_exact)
 [Q,    Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compute_exact)
-[U_r, S_r, V_r] = Prune_Rank_Spec(B, tau)
+[U_r, SV_r]     = Prune_Rank_Spec(B, tau)   % SV_r = S_r*V_r'; pruned block is U_r*SV_r
 ```
 
 The Frobenius and spectral methods share the same `tol_type`

@@ -57,7 +57,12 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
         Exact_err = [];
     end
 
-    norm_A_est = [];                    % set from ||B_1||_2 on the first iteration
+    % Target tolerance: fixed up front for an absolute tolerance; for a
+    % relative tolerance it is set once, at the first iteration, from the
+    % first block via tau = epsilon*||B_1||_2 ~ epsilon*||A||_2 (Remark 4.3).
+    if ~use_relative
+        tau = epsilon;
+    end
 
     for i = 1:maxit
 
@@ -89,17 +94,13 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
         end
         Bi = Qi' * A;
 
-        % Look-ahead indicator  ||B_i||_2 ~ ||A - Q_{1..i-1}B_{1..i-1}||_2.
-        Err_ind(i) = norm(Bi);
+        % Look-ahead indicator  ||B_i||_2 ~ ||A - Q_{1..i-1}B_{1..i-1}||_2,
+        % estimated to a couple of digits by power iteration (cost O(nb)).
+        Err_ind(i) = spec_norm_power(Bi);
 
-        % Target tolerance (relative uses ||B_1||_2 as the ||A||_2 estimate).
-        if use_relative
-            if i == 1
-                norm_A_est = Err_ind(1);
-            end
-            tau = epsilon * norm_A_est;
-        else
-            tau = epsilon;
+        % For a relative tolerance, fix tau from the first block's norm.
+        if use_relative && i == 1
+            tau = epsilon * Err_ind(1);     % ||A||_2 estimated by ||B_1||_2 (Remark 4.3)
         end
 
         if Err_ind(i) <= tau
@@ -119,10 +120,10 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
             keep   = ncol - b;                  % columns of blocks 1..i-2
             Q_prev = Q(:, keep+1:ncol);         % block i-1
             B_prev = B(keep+1:ncol, :);         % block i-1
-            [U_r, S_r, V_r] = Prune_Rank_Spec(B_prev, tau);
+            [U_r, SV_r] = Prune_Rank_Spec(B_prev, tau);
 
             Q = [Q(:, 1:keep), Q_prev * U_r];
-            B = [B(1:keep, :);  S_r * V_r'];
+            B = [B(1:keep, :);  SV_r];
             return
         end
 
@@ -150,4 +151,39 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
     if compute_exact
         Exact_err = Exact_err(1:i);
     end
+end
+
+
+function s = spec_norm_power(M)
+% spec_norm_power  Estimate ||M||_2 (largest singular value) by power
+% iteration on M'*M.  Only a couple of correct digits are needed for the
+% stopping indicator, so a loose relative tolerance and a small iteration
+% cap suffice; each iteration costs O(nb) (two matvecs with M).
+
+    reltol = 1e-2;      % ~2 correct digits in the singular value
+    maxit  = 100;       % safety cap (typically only a handful of iterations)
+
+    v  = randn(size(M, 2), 1);
+    nv = norm(v);
+    if nv == 0
+        s = 0; return
+    end
+    v = v / nv;
+
+    lambda = 0;
+    for k = 1:maxit
+        w = M' * (M * v);               % (M'*M) * v
+        lambda_new = norm(w);
+        if lambda_new == 0
+            s = 0; return               % M is (numerically) zero
+        end
+        v = w / lambda_new;
+        if abs(lambda_new - lambda) <= reltol * lambda_new
+            lambda = lambda_new;
+            break
+        end
+        lambda = lambda_new;
+    end
+
+    s = sqrt(lambda);                   % lambda -> sigma_max(M)^2
 end
