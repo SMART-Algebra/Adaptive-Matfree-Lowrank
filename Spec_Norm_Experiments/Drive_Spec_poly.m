@@ -20,7 +20,7 @@ TOL = sort([ ...                % refined tolerance grid down to 5e-7
     1e-3 5e-4 2e-4 ...
     1e-4 5e-5 2e-5 1e-5 5e-6 1e-6 5e-7], 'descend');
 
-A = Generate_Test_Matrix(N, N, 'poly4');
+A = Generate_Test_Matrix(N, N, 'poly2');
 
 %% Run the comparison
 [ERR_IND, RANKS, REL_ERR] = compare_Spec_methods(A, b, TOL);
@@ -35,12 +35,11 @@ HMT = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
 % (a) Computed rank vs. prescribed tolerance
-mHMT = RANKS(:,2) ~= N;          % drop tolerances where randQB_HMT returns full rank
 f_rank = figure('Name','poly: rank vs tolerance');
-hRef = semilogx(TOL,       RANKS(:,1),    REF{:}); hold on   % t-SVD
-hMF  = semilogx(TOL,       RANKS(:,3),    MF{:});            % randQB_MF_Spec
-hAF  = semilogx(TOL,       RANKS(:,4),    AF{:});            % randQB_AF_Spec
-hHMT = semilogx(TOL(mHMT), RANKS(mHMT,2), HMT{:});           % randQB_HMT
+hRef = semilogx(TOL, RANKS(:,1), REF{:}); hold on   % t-SVD
+hMF  = semilogx(TOL, RANKS(:,3), MF{:});            % randQB_MF_Spec
+hAF  = semilogx(TOL, RANKS(:,4), AF{:});            % randQB_AF_Spec
+hHMT = semilogx(TOL, RANKS(:,2), HMT{:});           % randQB_HMT
 hold off
 legend([hMF hAF hHMT hRef], ...
     {'\texttt{randQB\_MF\_Spec}','\texttt{randQB\_AF\_Spec}','\texttt{randQB\_HMT}','\texttt{t-SVD}'}, ...

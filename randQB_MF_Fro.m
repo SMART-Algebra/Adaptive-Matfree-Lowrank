@@ -14,7 +14,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Fro(A, b, epsilon, tol_type, com
 %   Inputs
 %     A             m-by-n matrix
 %     b             block size
-%     epsilon       tolerance (0 < epsilon < 1)
+%     epsilon       tolerance (epsilon > 0)
 %     tol_type      (optional, default 'relative')
 %                     'relative' : stop when ||A-Q*B||_F <= epsilon*||A||_F;
 %                                  ||A||_F is estimated on the fly.

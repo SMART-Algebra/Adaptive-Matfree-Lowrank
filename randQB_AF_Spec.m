@@ -16,7 +16,7 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 %   Inputs
 %     A             m-by-n matrix
 %     b             block size
-%     epsilon       tolerance (0 < epsilon < 1)
+%     epsilon       tolerance (epsilon > 0)
 %     tol_type      (optional, default 'relative')
 %                     'relative' : threshold epsilon*||R_1||_2/sqrt(b)
 %                                  (the first indicator estimates ||A||_2).

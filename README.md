@@ -70,7 +70,7 @@ The Frobenius and spectral methods share the same `tol_type`
 methods need no power-iteration parameter: `randQB_MF_Spec` estimates
 `||A||_2` from the first block via `||B_1||_2` (Remark 4.3).
 
-- `b` — block size; `epsilon` — tolerance (`0 < epsilon < 1`).
+- `b` — block size; `epsilon` — tolerance (`epsilon > 0`).
 - `tol_type` (optional, default `'relative'`): `'relative'` stops at
   `||A - Q*B||_F <= epsilon*||A||_F`; `'absolute'` stops at
   `||A - Q*B||_F <= epsilon`.

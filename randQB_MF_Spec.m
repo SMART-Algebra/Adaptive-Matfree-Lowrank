@@ -17,7 +17,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 %   Inputs
 %     A             m-by-n matrix
 %     b             block size
-%     epsilon       tolerance (0 < epsilon < 1)
+%     epsilon       tolerance (epsilon > 0)
 %     tol_type      (optional, default 'relative')
 %                     'relative' : stop when ||B_i||_2 <= epsilon*||A||_2,
 %                                  with ||A||_2 estimated by ||B_1||_2
