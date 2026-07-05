@@ -90,7 +90,7 @@ methods need no power-iteration parameter: `randQB_MF_Spec` estimates
 
 ```matlab
 [A_k, k]          = ref_svd_Fro(A, tol, tol_type)
-[Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)   % P = power-iteration parameter
+[Q, B, k, EE, fail, neg] = ref_randQB_EI(A, tol, b, P, tol_type)   % P = power-iteration parameter; neg = indicator went negative
 ```
 
 Both accept the same `'relative'`/`'absolute'` `tol_type` option.
@@ -98,7 +98,7 @@ Both accept the same `'relative'`/`'absolute'` `tol_type` option.
 ### Comparison engine
 
 ```matlab
-[ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL)
+[ERR_IND, RANKS, REL_ERR, EI_NEG] = compare_Fro_methods(A, b, TOL)
 ```
 
 Runs all four methods (t-SVD, `randQB_EI`, `randQB_MF_Fro`, `randQB_AF_Fro`)
@@ -110,6 +110,9 @@ over a list of tolerances `TOL`. With `ntol = numel(TOL)`:
 - `RANKS`   — `ntol`-by-4 computed ranks, columns `[t-SVD, EI, MF, AF]`.
 - `REL_ERR` — `ntol`-by-4 *exact* relative errors `||A-Q*B||_F/||A||_F`,
   columns `[t-SVD, EI, MF, AF]`.
+- `EI_NEG`  — `ntol`-by-1 logical; `true` at tolerances where `randQB_EI`'s
+  error indicator went negative (Gramian cancellation). The drivers use it to
+  hide `randQB_EI` from both plots at those tolerances.
 
 ### Drivers (reproduce the Section 5.2 figures and tables)
 

@@ -1,4 +1,4 @@
-function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
+function [Q, B, k, EE, fail, neg] = ref_randQB_EI(A, tol, b, P, tol_type)
 % The fixed-precision randQB_EI algorithm (reference method).
 % It produces a QB factorization of A whose approximation error fulfills
 %     ||A-QB||_F <= tol*||A||_F   (tol_type = 'relative', default), or
@@ -31,6 +31,7 @@ function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
     end
     flag = false;
     fail = false;
+    neg  = false;                       % set true if the error indicator ever goes negative
     for i = 1:maxiter
         Qc = Q(:, 1:ncol);
         Bc = B(1:ncol, :);
@@ -54,6 +55,7 @@ function [Q, B, k, EE, fail] = ref_randQB_EI(A, tol, b, P, tol_type)
 
         temp = E - norm(Bi, 'fro')^2;
         if temp < 0
+            neg = true;
             warning('Error indicator became negative')
             fprintf('Tolerance: %.1e\n', tol)
         end

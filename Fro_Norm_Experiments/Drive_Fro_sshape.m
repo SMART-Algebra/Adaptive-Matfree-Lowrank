@@ -22,7 +22,7 @@ TOL = 10.^(-1:-1:-p);
 A = Generate_Test_Matrix(N, N, 's_shape');
 
 %% Run the comparison
-[ERR_IND, RANKS, REL_ERR] = compare_Fro_methods(A, b, TOL);
+[ERR_IND, RANKS, REL_ERR, EI_NEG] = compare_Fro_methods(A, b, TOL);
 
 %% Line/marker styles (bright + distinct for the new methods; black reference)
 MF  = {'Color','b','LineStyle','-.', 'Marker','o','MarkerSize',23, ...
@@ -33,7 +33,7 @@ EI  = {'Color','g','LineStyle','-','Marker','*','MarkerSize',30, ...
        'LineWidth',3.0};                                      % randQB_EI
 REF = {'Color',[0 0 0],         'LineStyle','-', 'Marker','none','LineWidth',3.0}; % t-SVD / exact
 
-% (a) Error indicators at the smallest tolerance
+% (a) Error indicators at the smallest tolerance.
 f_err = figure('Name','sshape: error indicator');
 hMF  = semilogy(1:numel(ERR_IND{end,3}), ERR_IND{end,3}, MF{:}); hold on
 hAF  = semilogy(1:numel(ERR_IND{end,4}), ERR_IND{end,4}, AF{:});
@@ -48,7 +48,7 @@ ylabel('Error indicator','Interpreter','latex');
 grid on; set(gca,'FontSize',22);
 
 % (b) Computed rank vs. prescribed tolerance
-mEI = RANKS(:,2) ~= N;          % drop tolerances where randQB_EI returns full rank
+mEI = ~EI_NEG(:) & (RANKS(:,2) ~= N);   % drop tolerances where randQB_EI's indicator went negative or it returned full rank
 f_rank = figure('Name','sshape: rank vs tolerance');
 hRef = semilogx(TOL,      RANKS(:,1),   REF{:}); hold on   % t-SVD
 hMF  = semilogx(TOL,      RANKS(:,3),   MF{:});            % randQB_MF_Fro
