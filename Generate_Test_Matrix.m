@@ -35,8 +35,8 @@ function A = Generate_Test_Matrix(m, n, name)
         case 's_shape'
             % First part of the spectrum: linear decay (in log10) down to
             % 10^(-plin).
-            plin = 2;            % linear piece ends at 10^(-plin)
-            drop = 200;          % index where the linear piece ends
+            plin = 6;            % linear piece ends at 10^(-plin)
+            drop = 400;          % index where the linear piece ends
             piece_1 = (10^(-plin)).^(((1:drop)-1)/(drop-1));
 
             % Second part: polynomial decay (in log10).
