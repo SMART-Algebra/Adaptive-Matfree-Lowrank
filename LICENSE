@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party component:
-
-The file Fro_Norm_Experiments/ref_randQB_EI.m is adapted from Wenjian Yu's
-reference implementation randQB_EI_auto.m
-(https://github.com/WenjianYu/randQB_auto) and remains subject to the original
-author's rights. It is included here only as a comparison baseline, with
-attribution in the file header; the MIT license above applies solely to the
-authors' own code.

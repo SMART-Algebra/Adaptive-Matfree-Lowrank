@@ -88,7 +88,7 @@ methods need no power-iteration parameter: `randQB_MF_Spec` estimates
 | File | Description |
 |------|-------------|
 | `ref_svd_Fro.m`   | Truncated SVD (the optimal rank for a given tolerance). |
-| `ref_randQB_EI.m` | `randQB_EI`, adapted from Wenjian Yu's reference implementation [randQB_EI_auto.m](https://github.com/WenjianYu/randQB_auto/blob/master/randQB_EI_auto.m) (minor changes: extra error-indicator/failure outputs and an absolute-tolerance option). |
+| `ref_randQB_EI.m` | `randQB_EI` — an independent implementation of the algorithm of Yu, Gu & Li (*SIMAX* 2018), used as a comparison baseline. |
 
 ```matlab
 [A_k, k]          = ref_svd_Fro(A, tol, tol_type)
@@ -205,13 +205,6 @@ Drive_Spec_exp        % generates the exponential-decay figure + table
 ## License
 
 This code is released under the MIT License; see [`LICENSE`](LICENSE).
-
-**Third-party component.** `Fro_Norm_Experiments/ref_randQB_EI.m` is adapted
-from Wenjian Yu's reference implementation
-[`randQB_EI_auto.m`](https://github.com/WenjianYu/randQB_auto) and remains
-subject to the original author's rights; it is included only as a comparison
-baseline (attribution in the file header) and is not covered by the MIT license
-above.
 
 ## Acknowledgment
 
