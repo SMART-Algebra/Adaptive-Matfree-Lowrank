@@ -70,7 +70,7 @@ s = Prune_Rank_Fro(B, alpha, tau)
 The Frobenius and spectral methods share the same `tol_type`
 (`'relative'`/`'absolute'`) and `compute_exact` options.  The spectral
 methods need no power-iteration parameter: `randQB_MF_Spec` estimates
-`||A||_2` from the first block via `||B_1||_2` (Remark 4.3).
+`||A||_2` from the first block via `||B_1||_2` (Remark 4.1).
 
 - `b` — block size; `epsilon` — tolerance (`epsilon > 0`).
 - `tol_type` (optional, default `'relative'`): `'relative'` stops at
@@ -179,7 +179,7 @@ Runs all four methods (t-SVD, `randQB_HMT`, `randQB_MF_Spec`,
 
 | File | Test matrix |
 |------|-------------|
-| `Drive_Spec_exp.m`    | exponential decay (`'exp'`, `b = 8`) |
+| `Drive_Spec_exp.m`    | exponential decay (`'exp'`, `b = 16`) |
 | `Drive_Spec_poly.m`   | polynomial decay (`'poly2'`, `b = 32`) |
 | `Drive_Spec_sshape.m` | S-shaped decay (`'s_shape'`, `b = 32`) |
 
@@ -201,6 +201,17 @@ Drive_Spec_exp        % generates the exponential-decay figure + table
 ```
 
 ---
+
+## License
+
+This code is released under the MIT License; see [`LICENSE`](LICENSE).
+
+**Third-party component.** `Fro_Norm_Experiments/ref_randQB_EI.m` is adapted
+from Wenjian Yu's reference implementation
+[`randQB_EI_auto.m`](https://github.com/WenjianYu/randQB_auto) and remains
+subject to the original author's rights; it is included only as a comparison
+baseline (attribution in the file header) and is not covered by the MIT license
+above.
 
 ## Acknowledgment
 

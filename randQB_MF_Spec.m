@@ -21,7 +21,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 %     tol_type      (optional, default 'relative')
 %                     'relative' : stop when ||B_i||_2 <= epsilon*||A||_2,
 %                                  with ||A||_2 estimated by ||B_1||_2
-%                                  (Remark 4.3).
+%                                  (Remark 4.1).
 %                     'absolute' : stop when ||B_i||_2 <= epsilon.
 %     compute_exact (optional, default false) if true, also return the exact
 %                   residual spectral norm of the running approximation.  This
@@ -59,7 +59,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 
     % Target tolerance: fixed up front for an absolute tolerance; for a
     % relative tolerance it is set once, at the first iteration, from the
-    % first block via tau = epsilon*||B_1||_2 ~ epsilon*||A||_2 (Remark 4.3).
+    % first block via tau = epsilon*||B_1||_2 ~ epsilon*||A||_2 (Remark 4.1).
     if ~use_relative
         tau = epsilon;
     end
@@ -101,7 +101,7 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 
         % For a relative tolerance, fix tau from the first block's norm.
         if use_relative && i == 1
-            tau = epsilon * Err_ind(1);     % ||A||_2 estimated by ||B_1||_2 (Remark 4.3)
+            tau = epsilon * Err_ind(1);     % ||A||_2 estimated by ||B_1||_2 (Remark 4.1)
         end
 
         if Err_ind(i) <= tau
