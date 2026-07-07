@@ -8,9 +8,10 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 %
 %   Builds Q (orthonormal columns) block by block using ONLY the forward
 %   action A*X (no adjoint A'*X).  Mirrors randQB_AF_Fro: at each iteration the
-%   adjoint-free residual sketch Y_i = (A - Q*Q'*A)*Omega_i is formed first, and
-%   its scaled spectral norm ||Y_i||_2/sqrt(b) -- a proxy for ||E_{i-1}||_2 --
-%   serves as the look-ahead stopping indicator (estimated by power iteration).
+%   adjoint-free residual sketch Y_i = (A - Q*Q'*A)*Omega_i is formed first
+%   (with a normalized block Omega_i = randn(n,b)/sqrt(b)), and its spectral norm
+%   ||Y_i||_2 -- a proxy for ||E_{i-1}||_2 -- serves as the look-ahead stopping
+%   indicator (estimated by power iteration).
 %   The block is orthonormalized (QR) only if the tolerance is not yet met.
 %   Once the indicator drops below tau, the most recently retained block is
 %   pruned via Prune_Rank_Spec, applied to the forward sketch
@@ -22,7 +23,7 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 %     b             block size
 %     epsilon       tolerance (epsilon > 0)
 %     tol_type      (optional, default 'relative')
-%                     'relative' : threshold epsilon*||Y_1||_2/sqrt(b)
+%                     'relative' : threshold epsilon*||Y_1||_2
 %                                  (the first indicator estimates ||A||_2).
 %                     'absolute' : threshold epsilon.
 %     compute_exact (optional, default false) if true, also return the exact
@@ -31,7 +32,7 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 %
 %   Outputs
 %     Q             orthonormal basis meeting the requested tolerance (w.h.p.)
-%     Err_ind       adjoint-free indicator ||Y_i||_2/sqrt(b) per iteration
+%     Err_ind       adjoint-free indicator ||Y_i||_2 per iteration
 %     Exact_err     exact residual norm per iteration ([] unless compute_exact)
 
     if nargin < 4 || isempty(tol_type)
@@ -59,14 +60,14 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
 
     % Target tolerance: fixed for an absolute tolerance; for a relative
     % tolerance it is set once, at the first iteration, from the first block
-    % via tau = epsilon*||Y_1||_2/sqrt(b) ~ epsilon*||A||_2.
+    % via tau = epsilon*||Y_1||_2 ~ epsilon*||A||_2.
     if ~use_relative
         tau = epsilon;
     end
 
     for i = 1:maxit
 
-        Omega = randn(n, b);
+        Omega = randn(n, b) / sqrt(b);      % normalized Gaussian block
         Z = A * Omega;
 
         % Adjoint-free residual sketch  Y = (A - Q*Q'*A)*Omega = Z - Q*(Q'*Z).
@@ -77,14 +78,14 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
             Y  = Z - Qc * (Qc' * Z);
         end
 
-        % Look-ahead indicator ||Y_i||_2/sqrt(b) ~ ||E_{i-1}||_2, estimated to a
-        % couple of digits by power iteration (cost O(mb)).  Since Y_i = Q_i R_i
-        % with Q_i orthonormal, this equals ||R_i||_2/sqrt(b).
-        Err_ind(i) = spec_norm_power(Y) / sqrt(b);
+        % Look-ahead indicator ||Y_i||_2 ~ ||E_{i-1}||_2, estimated to a couple
+        % of digits by power iteration (cost O(mb)).  Since Y_i = Q_i R_i with
+        % Q_i orthonormal, this equals ||R_i||_2.
+        Err_ind(i) = spec_norm_power(Y);
 
         % For a relative tolerance, fix tau from the first block's norm.
         if use_relative && i == 1
-            tau = epsilon * Err_ind(1);     % ||A||_2 estimated by ||Y_1||_2/sqrt(b)
+            tau = epsilon * Err_ind(1);     % ||A||_2 estimated by ||Y_1||_2
         end
 
         if compute_exact
@@ -113,10 +114,10 @@ function [Q, Err_ind, Exact_err] = randQB_AF_Spec(A, b, epsilon, tol_type, compu
             Q_prev = Q(:, keep+1:ncol);         % block i-1
             % Adjoint-free pruning: prune the forward sketch
             % B_tilde = Q_{i-1}'*Z_i = B_{i-1}*Omega_i (proxy for B_{i-1}), as in
-            % randQB_AF_Fro.  The 1/sqrt(b) makes its singular values estimate
-            % those of B_{i-1}.
+            % randQB_AF_Fro.  With the normalized Omega, its singular values
+            % directly estimate those of B_{i-1}.
             B_tilde = Q_prev' * Z;
-            [U_r, ~] = Prune_Rank_Spec(B_tilde / sqrt(b), tau);
+            [U_r, ~] = Prune_Rank_Spec(B_tilde, tau);
 
             Q = [Q(:, 1:keep), Q_prev * U_r];
             return

@@ -66,7 +66,8 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 
     for i = 1:maxit
 
-        Omega = randn(n, b);
+        Omega = randn(n, b) / sqrt(b);      % normalized block (uniform convention;
+                                            % the indicator ||B_i||_2 is scale-free)
         Z = A * Omega;
 
         % Implicit residual sketch  Y = (A - Q*B)*Omega.
