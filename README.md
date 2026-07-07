@@ -13,7 +13,8 @@ randQB_AF_Fro.m            proposed method, Algorithm 3.3 (adjoint-free)
 Prune_Rank_Fro.m           rank pruning, Algorithm 3.2 (used by the two above)
 randQB_MF_Spec.m           proposed method, Algorithm 4.1 (spectral norm)
 randQB_AF_Spec.m           proposed method, Section 4.3 (adjoint-free)
-Prune_Rank_Spec.m          rank pruning, Algorithm 4.2 (used by randQB_MF_Spec)
+Prune_Rank_Spec.m          rank pruning, Algorithm 4.2 (used by the two spectral methods)
+spec_norm_power.m          power-iteration spectral-norm estimate (shared by the spectral methods)
 Generate_Test_Matrix.m     shared test-matrix generator (used by all experiments)
 Fro_Norm_Experiments/      Frobenius-norm experiment drivers & baselines  (Section 5.2)
 Spec_Norm_Experiments/     spectral-norm experiment drivers & baselines   (Section 5.3)
@@ -53,7 +54,8 @@ Frobenius norm, `'poly2'` for the spectral norm), and Matrix 3 (`'s_shape'`).
 | `Prune_Rank_Fro.m` | Algorithm 3.2 | Rank pruning of the final block, called by the two algorithms above. |
 | `randQB_MF_Spec.m` | Algorithm 4.1 | Matrix-free, adaptive low-rank QB approximation in the spectral norm. |
 | `randQB_AF_Spec.m` | Section 4.3   | Adjoint-free spectral variant (uses only the forward operator `A*x`). |
-| `Prune_Rank_Spec.m`| Algorithm 4.2 | Spectral-norm rank pruning of the final block, called by `randQB_MF_Spec`. |
+| `Prune_Rank_Spec.m`| Algorithm 4.2 | Spectral-norm rank pruning of the final block, called by `randQB_MF_Spec` and `randQB_AF_Spec`. |
+| `spec_norm_power.m`| Remark (§4.1) | Power-iteration estimate of `\|M\|_2`, shared by `randQB_MF_Spec` and `randQB_AF_Spec`. |
 
 ```matlab
 [Q, B, Err_ind, Exact_err] = randQB_MF_Fro(A, b, epsilon, tol_type, compute_exact)
