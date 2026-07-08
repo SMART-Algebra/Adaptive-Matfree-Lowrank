@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Third-party component:
+
+The file Fro_Norm_Experiments/ref_randQB_EI.m is adapted, with the kind
+permission of Prof. Wenjian Yu, from his reference implementation
+randQB_EI_auto.m in the randQB_auto repository
+(https://github.com/WenjianYu/randQB_auto). It remains subject to the original
+author's rights; the MIT license above applies to the authors' own code. When
+using that file, please cite W. Yu, Y. Gu, and Y. Li, "Efficient randomized
+algorithms for the fixed-precision low-rank matrix approximation," SIAM J.
+Matrix Anal. Appl., 39(3):1339-1359, 2018.

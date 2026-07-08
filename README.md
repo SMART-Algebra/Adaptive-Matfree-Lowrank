@@ -88,7 +88,7 @@ methods need no power-iteration parameter: `randQB_MF_Spec` estimates
 | File | Description |
 |------|-------------|
 | `ref_svd_Fro.m`   | Truncated SVD (the optimal rank for a given tolerance). |
-| `ref_randQB_EI.m` | `randQB_EI` — an independent implementation of the algorithm of Yu, Gu & Li (*SIMAX* 2018), used as a comparison baseline. |
+| `ref_randQB_EI.m` | `randQB_EI`, adapted (with the kind permission of Prof. Wenjian Yu) from his reference implementation [`randQB_EI_auto.m`](https://github.com/WenjianYu/randQB_auto) — the algorithm of Yu, Gu & Li (*SIMAX* 2018); used as a comparison baseline. |
 
 ```matlab
 [A_k, k]          = ref_svd_Fro(A, tol, tol_type)
@@ -205,6 +205,14 @@ Drive_Spec_exp        % generates the exponential-decay figure + table
 ## License
 
 This code is released under the MIT License; see [`LICENSE`](LICENSE).
+
+**Third-party component.** `Fro_Norm_Experiments/ref_randQB_EI.m` is adapted,
+with the kind permission of Prof. Wenjian Yu, from his reference implementation
+[`randQB_EI_auto.m`](https://github.com/WenjianYu/randQB_auto); it remains
+subject to the original author's rights and is not covered by the MIT license
+above. When using it, please cite W. Yu, Y. Gu, and Y. Li, *Efficient
+randomized algorithms for the fixed-precision low-rank matrix approximation*,
+SIAM J. Matrix Anal. Appl., 39(3):1339–1359, 2018.
 
 ## Acknowledgment
 
