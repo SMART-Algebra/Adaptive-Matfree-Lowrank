@@ -18,6 +18,8 @@ spec_norm_power.m          power-iteration spectral-norm estimate (shared by the
 Generate_Test_Matrix.m     shared test-matrix generator (used by all experiments)
 QB_to_SVD.m                post-processing: QB output -> (truncated) SVD U*S*V'
 Test_QB_to_SVD.m           self-check for QB_to_SVD
+MatFreeOp.m                matrix-free operator wrapper (function handles for A*X and A'*Y)
+Test_MatFreeOp.m           self-check and usage example for MatFreeOp
 Fro_Norm_Experiments/      Frobenius-norm experiment drivers & baselines  (Section 5.2)
 Spec_Norm_Experiments/     spectral-norm experiment drivers & baselines   (Section 5.3)
 ```
@@ -59,6 +61,7 @@ Frobenius norm, `'poly2'` for the spectral norm), and Matrix 3 (`'s_shape'`).
 | `Prune_Rank_Spec.m`| Algorithm 4.2 | Spectral-norm rank pruning of the final block, called by `randQB_MF_Spec` and `randQB_AF_Spec`. |
 | `spec_norm_power.m`| Remark (§4.1) | Power-iteration estimate of `\|M\|_2`, shared by `randQB_MF_Spec` and `randQB_AF_Spec`. |
 | `QB_to_SVD.m`      | —             | Post-processing: converts a `(Q, B)` output into a (truncated) SVD `U*S*V'` with no further products with `A`; the pseudoinverse of the approximation is then `V*(S\U')`. |
+| `MatFreeOp.m`      | —             | Wraps function handles for `A*X` and `A'*Y` as an operator that the four routines accept in place of a matrix (an operator given through PDE solves, for example). |
 
 ```matlab
 [Q, B, Err_ind, Exact_err] = randQB_MF_Fro(A, b, epsilon, tol_type, compute_exact)
@@ -86,6 +89,25 @@ error adds to the QB error in quadrature,
 `||A - U*S*V'||_F^2 = ||A - Q*B||_F^2 + norm(sv_drop)^2`, so a tolerance
 budget can be split between the two steps.  Complex `A` is supported.
 `Test_QB_to_SVD` runs the self-checks.
+
+### Matrix-free operators
+
+```matlab
+A = MatFreeOp(m, n, @(X) Afun(X), @(Y) Atfun(Y));   % Afun(X) = A*X, Atfun(Y) = A'*Y, block inputs
+A = MatFreeOp(m, n, @(X) Afun(X));                  % forward only: for randQB_AF_Fro / randQB_AF_Spec
+[Q, B]    = randQB_MF_Fro(A, b, epsilon);           % any of the four routines
+[U, S, V] = QB_to_SVD(Q, B);
+```
+
+The routines touch `A` only through `size(A)`, `A*X`, `Qi'*A`, and `A'`, and
+`MatFreeOp` provides exactly these. The handles must accept a block of `b`
+columns (wrap a single-column handle in a loop; `Test_MatFreeOp` shows how)
+and may capture any data they need, such as a factorization for an operator
+defined through solves, or the forward and adjoint solvers of a PDE
+Jacobian. `compute_exact` must stay `false` for an operator, since it needs
+the entries of `A`. `Test_MatFreeOp` checks that every routine returns the
+same factors from the wrapper as from the dense matrix and runs a
+solve-based example end to end.
 
 The Frobenius and spectral methods share the same `tol_type`
 (`'relative'`/`'absolute'`) and `compute_exact` options.  The spectral

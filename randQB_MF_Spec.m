@@ -15,7 +15,8 @@ function [Q, B, Err_ind, Exact_err] = randQB_MF_Spec(A, b, epsilon, tol_type, co
 %   rank is size(Q,2).
 %
 %   Inputs
-%     A             m-by-n matrix
+%     A             m-by-n matrix, or a MatFreeOp wrapping function handles
+%                   for A*X and A'*X (see MatFreeOp.m)
 %     b             block size
 %     epsilon       tolerance (epsilon > 0)
 %     tol_type      (optional, default 'relative')
